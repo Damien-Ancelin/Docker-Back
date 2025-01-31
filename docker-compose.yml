@@ -1,0 +1,33 @@
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - ./index.js:/app/index.js
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+    depends_on:
+      db:
+        condition: service_healthy
+  
+  db:
+    container_name: app_db
+    image: postgres
+    env_file:
+      - ./docker/docker-db.env
+    volumes:
+      - ./data:/docker-entrypoint-initdb.d
+      - back_up_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d db"]
+      interval: 5s
+      retries: 5
+    
+volumes:
+  back_up_db:
+    
